@@ -17,3 +17,22 @@ exports.createProduct = async (req, res) => {
     });
   }
 };
+
+exports.getAllProducts = async (req, res) => {
+  try {
+    // console.log(req.body);
+    const products = await Product.find();
+    res.status(200).json({
+      status: "success",
+      results: products.length,
+      data: {
+        products: products,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: err,
+    });
+  }
+};

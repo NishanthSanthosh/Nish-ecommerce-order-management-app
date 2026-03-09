@@ -12,7 +12,7 @@ const ReusableTable = ({ headers, data, accessors }) => {
     <Paper sx={{ width: "100%" }}>
       <TableContainer>
         <Table>
-          <TableHead>
+          <TableHead sx={{ backgroundColor: "#e7f1f3" }}>
             <TableRow>
               {headers.map((header, index) => (
                 <TableCell key={index}>{header}</TableCell>

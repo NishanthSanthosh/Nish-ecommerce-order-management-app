@@ -45,6 +45,7 @@ const ReusableForm = ({
             type={field.type || "text"}
             error={!!errors[field.name]}
             helperText={errors[field.name]?.message}
+            inputProps={field.inputProps}
             {...register(field.name, field.validation)}
           />
         ),

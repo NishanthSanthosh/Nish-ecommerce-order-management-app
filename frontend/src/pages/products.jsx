@@ -5,6 +5,7 @@ import { useState } from "react";
 import AddProductModal from "../components/modal";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { useEffect } from "react";
 const headers = [
   "Product ID",
   "Product Name",
@@ -13,265 +14,8 @@ const headers = [
   "Stock",
   "Rating",
 ];
-const accessors = ["id", "name", "category", "price", "stock", "rating"];
-const data = [
-  {
-    id: "P001",
-    name: "Organic Apples",
-    category: "Fruits",
-    price: 3.99,
-    stock: 120,
-    rating: 4.5,
-  },
-  {
-    id: "P002",
-    name: "Bananas",
-    category: "Fruits",
-    price: 1.29,
-    stock: 150,
-    rating: 4.8,
-  },
-  {
-    id: "P003",
-    name: "Whole Wheat Bread",
-    category: "Bakery",
-    price: 2.49,
-    stock: 50,
-    rating: 4.2,
-  },
-  {
-    id: "P004",
-    name: "Almond Milk",
-    category: "Dairy",
-    price: 3.29,
-    stock: 30,
-    rating: 4.7,
-  },
-  {
-    id: "P005",
-    name: "Brown Rice",
-    category: "Grains",
-    price: 1.99,
-    stock: 200,
-    rating: 4.3,
-  },
-  {
-    id: "P006",
-    name: "Spinach",
-    category: "Vegetables",
-    price: 2.19,
-    stock: 80,
-    rating: 4.6,
-  },
-  {
-    id: "P007",
-    name: "Carrots",
-    category: "Vegetables",
-    price: 1.99,
-    stock: 100,
-    rating: 4.5,
-  },
-  {
-    id: "P008",
-    name: "Greek Yogurt",
-    category: "Dairy",
-    price: 2.99,
-    stock: 60,
-    rating: 4.6,
-  },
-  {
-    id: "P001",
-    name: "Organic Apples",
-    category: "Fruits",
-    price: 3.99,
-    stock: 120,
-    rating: 4.5,
-  },
-  {
-    id: "P002",
-    name: "Bananas",
-    category: "Fruits",
-    price: 1.29,
-    stock: 150,
-    rating: 4.8,
-  },
-  {
-    id: "P003",
-    name: "Whole Wheat Bread",
-    category: "Bakery",
-    price: 2.49,
-    stock: 50,
-    rating: 4.2,
-  },
-  {
-    id: "P004",
-    name: "Almond Milk",
-    category: "Dairy",
-    price: 3.29,
-    stock: 30,
-    rating: 4.7,
-  },
-  {
-    id: "P005",
-    name: "Brown Rice",
-    category: "Grains",
-    price: 1.99,
-    stock: 200,
-    rating: 4.3,
-  },
-  {
-    id: "P006",
-    name: "Spinach",
-    category: "Vegetables",
-    price: 2.19,
-    stock: 80,
-    rating: 4.6,
-  },
-  {
-    id: "P007",
-    name: "Carrots",
-    category: "Vegetables",
-    price: 1.99,
-    stock: 100,
-    rating: 4.5,
-  },
-  {
-    id: "P008",
-    name: "Greek Yogurt",
-    category: "Dairy",
-    price: 2.99,
-    stock: 60,
-    rating: 4.6,
-  },
-  {
-    id: "P001",
-    name: "Organic Apples",
-    category: "Fruits",
-    price: 3.99,
-    stock: 120,
-    rating: 4.5,
-  },
-  {
-    id: "P002",
-    name: "Bananas",
-    category: "Fruits",
-    price: 1.29,
-    stock: 150,
-    rating: 4.8,
-  },
-  {
-    id: "P003",
-    name: "Whole Wheat Bread",
-    category: "Bakery",
-    price: 2.49,
-    stock: 50,
-    rating: 4.2,
-  },
-  {
-    id: "P004",
-    name: "Almond Milk",
-    category: "Dairy",
-    price: 3.29,
-    stock: 30,
-    rating: 4.7,
-  },
-  {
-    id: "P005",
-    name: "Brown Rice",
-    category: "Grains",
-    price: 1.99,
-    stock: 200,
-    rating: 4.3,
-  },
-  {
-    id: "P006",
-    name: "Spinach",
-    category: "Vegetables",
-    price: 2.19,
-    stock: 80,
-    rating: 4.6,
-  },
-  {
-    id: "P007",
-    name: "Carrots",
-    category: "Vegetables",
-    price: 1.99,
-    stock: 100,
-    rating: 4.5,
-  },
-  {
-    id: "P008",
-    name: "Greek Yogurt",
-    category: "Dairy",
-    price: 2.99,
-    stock: 60,
-    rating: 4.6,
-  },
-  {
-    id: "P001",
-    name: "Organic Apples",
-    category: "Fruits",
-    price: 3.99,
-    stock: 120,
-    rating: 4.5,
-  },
-  {
-    id: "P002",
-    name: "Bananas",
-    category: "Fruits",
-    price: 1.29,
-    stock: 150,
-    rating: 4.8,
-  },
-  {
-    id: "P003",
-    name: "Whole Wheat Bread",
-    category: "Bakery",
-    price: 2.49,
-    stock: 50,
-    rating: 4.2,
-  },
-  {
-    id: "P004",
-    name: "Almond Milk",
-    category: "Dairy",
-    price: 3.29,
-    stock: 30,
-    rating: 4.7,
-  },
-  {
-    id: "P005",
-    name: "Brown Rice",
-    category: "Grains",
-    price: 1.99,
-    stock: 200,
-    rating: 4.3,
-  },
-  {
-    id: "P006",
-    name: "Spinach",
-    category: "Vegetables",
-    price: 2.19,
-    stock: 80,
-    rating: 4.6,
-  },
-  {
-    id: "P007",
-    name: "Carrots",
-    category: "Vegetables",
-    price: 1.99,
-    stock: 100,
-    rating: 4.5,
-  },
-  {
-    id: "P008",
-    name: "Greek Yogurt",
-    category: "Dairy",
-    price: 2.99,
-    stock: 60,
-    rating: 4.6,
-  },
-];
+// const accessors = ["id", "name", "category", "price", "stock", "rating"];
+const accessors = ["_id", "product", "category", "price", "stock", "rating"];
 
 const productFields = [
   {
@@ -290,8 +34,9 @@ const productFields = [
     label: "Category",
     type: "select",
     options: [
-      { label: "Electronics", value: "Electronics" },
-      { label: "Grocery", value: "Grocery" },
+      { label: "Vegetables", value: "Vegetables" },
+      { label: "Fruits", value: "Fruits" },
+      { label: "Dairy", value: "Dairy" },
     ],
     validation: {
       required: "Category is required",
@@ -301,10 +46,11 @@ const productFields = [
     name: "price",
     label: "Price",
     type: "number",
+    inputProps: { step: "any" },
     validation: {
       required: "Price is required",
       min: {
-        value: 1,
+        value: 0.01,
         message: "Price must be greater than 0",
       },
     },
@@ -332,6 +78,18 @@ export default function Products() {
     formState: { errors },
     reset,
   } = useForm();
+  const [products, setProducts] = useState([]);
+  const fetchProducts = () => {
+    fetch("http://127.0.0.1:3000/api/version1/products")
+      .then((res) => res.json())
+      .then((data) => {
+        setProducts(data.data.products);
+      })
+      .catch((error) => console.error(error));
+  };
+  useEffect(() => {
+    fetchProducts();
+  }, []);
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
@@ -354,6 +112,7 @@ export default function Products() {
       console.log(data1);
       toast.success("Product created successfully");
       handleClose();
+      fetchProducts();
     } catch (error) {
       toast.error(error);
       console.log(error);
@@ -361,7 +120,7 @@ export default function Products() {
   };
   return (
     <>
-      <ProductTable headers={headers} data={data} accessors={accessors} />
+      <ProductTable headers={headers} data={products} accessors={accessors} />
       <Toolbar sx={{ display: "flex" }}>
         <Button
           variant="contained"
@@ -376,13 +135,6 @@ export default function Products() {
         onClose={handleClose}
         title="Add New Product"
       >
-        {/* <AddProductForm
-          fields={productFields}
-          register={register}
-          errors={errors}
-          onSubmit={handleSubmit(onSubmit)}
-          submitLabel="Add Product"
-        /> */}
         <AddProductForm
           fields={productFields}
           register={register}
