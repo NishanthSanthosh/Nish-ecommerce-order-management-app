@@ -1,6 +1,7 @@
 const Product = require("./../models/productModel");
 exports.createProduct = async (req, res) => {
   try {
+    console.log(req.body);
     const newProduct = await Product.create(req.body);
     console.log("hello");
     res.status(201).json({
@@ -12,7 +13,7 @@ exports.createProduct = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: "fail",
-      message: "Invalid data sent!)",
+      message: err,
     });
   }
 };

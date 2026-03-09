@@ -12,10 +12,11 @@ import Orders from "./pages/orders";
 import Coupons from "./pages/coupons";
 import Analytics from "./pages/analytics";
 import Settings from "./pages/settings";
-
+import { ToastContainer } from "react-toastify";
 export default function App() {
   return (
     <BrowserRouter>
+      <ToastContainer position="top-right" autoClose={3000} />
       <Routes>
         <Route element={<AuthLayout />}>
           <Route path="/signup" element={<Signup />} />

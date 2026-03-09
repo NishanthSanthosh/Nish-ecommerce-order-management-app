@@ -4,6 +4,7 @@ import AddProductForm from "../components/form";
 import { useState } from "react";
 import AddProductModal from "../components/modal";
 import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 const headers = [
   "Product ID",
   "Product Name",
@@ -274,7 +275,7 @@ const data = [
 
 const productFields = [
   {
-    name: "name",
+    name: "product",
     label: "Product Name",
     validation: {
       required: "Product name is required",
@@ -326,15 +327,37 @@ export default function Products() {
   const [open, setOpen] = useState(false);
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm();
-
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    reset();
+  };
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:3000/api/version1/products",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        },
+      );
+      const data1 = await response.json();
+      console.log(data1);
+      toast.success("Product created successfully");
+      handleClose();
+    } catch (error) {
+      toast.error(error);
+      console.log(error);
+    }
   };
   return (
     <>
@@ -353,9 +376,17 @@ export default function Products() {
         onClose={handleClose}
         title="Add New Product"
       >
+        {/* <AddProductForm
+          fields={productFields}
+          register={register}
+          errors={errors}
+          onSubmit={handleSubmit(onSubmit)}
+          submitLabel="Add Product"
+        /> */}
         <AddProductForm
           fields={productFields}
           register={register}
+          control={control}
           errors={errors}
           onSubmit={handleSubmit(onSubmit)}
           submitLabel="Add Product"
