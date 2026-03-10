@@ -1,13 +1,55 @@
-import React from "react";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
+// import React from "react";
+// import Table from "@mui/material/Table";
+// import TableBody from "@mui/material/TableBody";
+// import TableCell from "@mui/material/TableCell";
+// import TableContainer from "@mui/material/TableContainer";
+// import TableHead from "@mui/material/TableHead";
+// import TableRow from "@mui/material/TableRow";
+// import Paper from "@mui/material/Paper";
 
-const ReusableTable = ({ headers, data, accessors }) => {
+// const ReusableTable = ({ headers, data, accessors }) => {
+//   return (
+//     <Paper sx={{ width: "100%" }}>
+//       <TableContainer>
+//         <Table>
+//           <TableHead sx={{ backgroundColor: "#e7f1f3" }}>
+//             <TableRow>
+//               {headers.map((header, index) => (
+//                 <TableCell key={index}>{header}</TableCell>
+//               ))}
+//             </TableRow>
+//           </TableHead>
+
+//           <TableBody>
+//             {data.map((row, rowIndex) => (
+//               <TableRow key={rowIndex}>
+//                 {accessors.map((key, colIndex) => (
+//                   <TableCell key={colIndex}>{row[key] ?? "-"}</TableCell>
+//                 ))}
+//               </TableRow>
+//             ))}
+//           </TableBody>
+//         </Table>
+//       </TableContainer>
+//     </Paper>
+//   );
+// };
+
+// export default ReusableTable;
+import {
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  TableContainer,
+  Button,
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { IconButton } from "@mui/material";
+const ReusableTable = ({ headers, data, accessors, onEdit, onDelete }) => {
   return (
     <Paper sx={{ width: "100%" }}>
       <TableContainer>
@@ -17,6 +59,8 @@ const ReusableTable = ({ headers, data, accessors }) => {
               {headers.map((header, index) => (
                 <TableCell key={index}>{header}</TableCell>
               ))}
+
+              {(onEdit || onDelete) && <TableCell>Actions</TableCell>}
             </TableRow>
           </TableHead>
 
@@ -26,6 +70,38 @@ const ReusableTable = ({ headers, data, accessors }) => {
                 {accessors.map((key, colIndex) => (
                   <TableCell key={colIndex}>{row[key] ?? "-"}</TableCell>
                 ))}
+
+                {(onEdit || onDelete) && (
+                  <TableCell>
+                    {onEdit && (
+                      <IconButton
+                        color="primary"
+                        onClick={() => onEdit(row)}
+                        size="small"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                    )}
+
+                    {onDelete && (
+                      <IconButton
+                        color="error"
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Are you sure you want to delete ${row.product}`,
+                            )
+                          ) {
+                            onDelete(row);
+                          }
+                        }}
+                        size="small"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    )}
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

@@ -95,7 +95,21 @@ export default function Products() {
     setOpen(false);
     reset();
   };
+  const handleEdit = (row) => {
+    console.log("Edit row:", row);
+  };
 
+  const handleDelete = async (row) => {
+    try {
+      await fetch(`http://127.0.0.1:3000/api/version1/products/${row._id}`, {
+        method: "DELETE",
+      });
+
+      fetchProducts();
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const onSubmit = async (data) => {
     try {
       const response = await fetch(
@@ -120,7 +134,13 @@ export default function Products() {
   };
   return (
     <>
-      <ProductTable headers={headers} data={products} accessors={accessors} />
+      <ProductTable
+        headers={headers}
+        accessors={accessors}
+        data={products}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
       <Toolbar sx={{ display: "flex" }}>
         <Button
           variant="contained"
