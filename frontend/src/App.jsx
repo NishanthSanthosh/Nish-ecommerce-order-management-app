@@ -13,27 +13,32 @@ import Coupons from "./pages/coupons";
 import Analytics from "./pages/analytics";
 import Settings from "./pages/settings";
 import { ToastContainer } from "react-toastify";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 export default function App() {
+  const queryClient = new QueryClient();
   return (
     <BrowserRouter>
-      <ToastContainer position="top-right" autoClose={3000} />
-      <Routes>
-        <Route element={<AuthLayout />}>
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-        </Route>
-        <Route element={<DashboardLayout />}>
-          <Route path="/" element={<Navigate to="/users" />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/coupons" element={<Coupons />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/settings" element={<Settings />} />
-        </Route>
-      </Routes>
+      <QueryClientProvider client={queryClient}>
+        <ToastContainer position="top-right" autoClose={3000} />
+        <Routes>
+          <Route element={<AuthLayout />}>
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
+          </Route>
+          <Route element={<DashboardLayout />}>
+            <Route path="/" element={<Navigate to="/users" />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/users" element={<Users />} />
+            <Route path="/coupons" element={<Coupons />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </QueryClientProvider>
     </BrowserRouter>
   );
 }

@@ -54,7 +54,7 @@ const ReusableForm = ({
       <Button
         type="submit"
         variant="contained"
-        sx={{ backgroundColor: "#0b7285" }}
+        sx={{ backgroundColor: "black" }}
       >
         {submitLabel}
       </Button>

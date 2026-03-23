@@ -1,41 +1,3 @@
-// import React from "react";
-// import Table from "@mui/material/Table";
-// import TableBody from "@mui/material/TableBody";
-// import TableCell from "@mui/material/TableCell";
-// import TableContainer from "@mui/material/TableContainer";
-// import TableHead from "@mui/material/TableHead";
-// import TableRow from "@mui/material/TableRow";
-// import Paper from "@mui/material/Paper";
-
-// const ReusableTable = ({ headers, data, accessors }) => {
-//   return (
-//     <Paper sx={{ width: "100%" }}>
-//       <TableContainer>
-//         <Table>
-//           <TableHead sx={{ backgroundColor: "#e7f1f3" }}>
-//             <TableRow>
-//               {headers.map((header, index) => (
-//                 <TableCell key={index}>{header}</TableCell>
-//               ))}
-//             </TableRow>
-//           </TableHead>
-
-//           <TableBody>
-//             {data.map((row, rowIndex) => (
-//               <TableRow key={rowIndex}>
-//                 {accessors.map((key, colIndex) => (
-//                   <TableCell key={colIndex}>{row[key] ?? "-"}</TableCell>
-//                 ))}
-//               </TableRow>
-//             ))}
-//           </TableBody>
-//         </Table>
-//       </TableContainer>
-//     </Paper>
-//   );
-// };
-
-// export default ReusableTable;
 import {
   Paper,
   Table,
@@ -54,13 +16,22 @@ const ReusableTable = ({ headers, data, accessors, onEdit, onDelete }) => {
     <Paper sx={{ width: "100%" }}>
       <TableContainer>
         <Table>
-          <TableHead sx={{ backgroundColor: "#e7f1f3" }}>
-            <TableRow>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "black", color: "white" }}>
               {headers.map((header, index) => (
-                <TableCell key={index}>{header}</TableCell>
+                <TableCell
+                  key={index}
+                  sx={{ fontWeight: "500", color: "white" }}
+                >
+                  {header}
+                </TableCell>
               ))}
 
-              {(onEdit || onDelete) && <TableCell>Actions</TableCell>}
+              {(onEdit || onDelete) && (
+                <TableCell sx={{ fontWeight: "500", color: "white" }}>
+                  Actions
+                </TableCell>
+              )}
             </TableRow>
           </TableHead>
 

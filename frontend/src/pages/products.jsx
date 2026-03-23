@@ -5,7 +5,8 @@ import { useState } from "react";
 import AddProductModal from "../components/modal";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { useEffect } from "react";
+// import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 const headers = [
   "Product ID",
   "Product Name",
@@ -15,18 +16,30 @@ const headers = [
   "Rating",
 ];
 // const accessors = ["id", "name", "category", "price", "stock", "rating"];
-const accessors = ["_id", "product", "category", "price", "stock", "rating"];
+import {
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getProducts,
+} from "../services/productService";
+import { useQueryClient } from "@tanstack/react-query";
 
+const accessors = ["_id", "product", "category", "price", "stock", "rating"];
 const productFields = [
   {
     name: "product",
     label: "Product Name",
+    placeholder: "e.g., Organic Red Apples",
     validation: {
       required: "Product name is required",
-      minLength: {
-        value: 3,
-        message: "Minimum 3 characters",
+      minLength: { value: 3, message: "Minimum 3 characters" },
+      maxLength: { value: 50, message: "Maximum 50 characters" },
+      pattern: {
+        value: /^[a-zA-Z0-9\s&'-]+$/,
+        message: "Only alphanumeric characters allowed",
       },
+      validate: (value) =>
+        value.trim().length >= 3 || "Name cannot be just spaces",
     },
   },
   {
@@ -39,37 +52,40 @@ const productFields = [
       { label: "Dairy", value: "Dairy" },
     ],
     validation: {
-      required: "Category is required",
+      required: "Please select a category",
     },
   },
   {
     name: "price",
     label: "Price",
     type: "number",
-    inputProps: { step: "any" },
+    inputProps: { step: "0.01", min: "0" },
     validation: {
       required: "Price is required",
-      min: {
-        value: 0.01,
-        message: "Price must be greater than 0",
+      min: { value: 0.01, message: "Price must be at least 0.01" },
+      max: { value: 100, message: "Price exceeds maximum limit" },
+      pattern: {
+        value: /^\d+(\.\d{1,2})?$/,
+        message: "Maximum 2 decimal places allowed",
       },
     },
   },
   {
     name: "stock",
-    label: "Stock",
+    label: "Stock Quantity",
     type: "number",
     validation: {
       required: "Stock is required",
-      min: {
-        value: 0,
-        message: "Stock cannot be negative",
-      },
+      min: { value: 0, message: "Stock cannot be negative" },
+      max: { value: 99999, message: "Stock exceeds warehouse capacity" },
+      validate: (value) =>
+        Number.isInteger(Number(value)) || "Stock must be a whole number",
     },
   },
 ];
 
 export default function Products() {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const {
     register,
@@ -77,59 +93,82 @@ export default function Products() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm();
-  const [products, setProducts] = useState([]);
-  const fetchProducts = () => {
-    fetch("http://127.0.0.1:3000/api/version1/products")
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data.data.products);
-      })
-      .catch((error) => console.error(error));
+  } = useForm({
+    mode: "onBlur",
+  });
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["products"], // query key
+    queryFn: async () => {
+      const response = await getProducts();
+      return response?.data?.products || [];
+    },
+    staleTime: 5000, // optional
+    refetchOnWindowFocus: true,
+  });
+
+  if (isLoading) return <div>Loading products...</div>;
+  if (isError) return <div>Error: {error.message}</div>;
+  const handleOpen = () => {
+    setOpen(true);
+    reset({});
   };
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-  const handleOpen = () => setOpen(true);
+
   const handleClose = () => {
     setOpen(false);
-    reset();
+    setSelectedProduct(null);
+    reset({});
   };
   const handleEdit = (row) => {
-    console.log("Edit row:", row);
+    setSelectedProduct(row);
+    reset(row);
+    setOpen(true);
   };
 
   const handleDelete = async (row) => {
     try {
-      await fetch(`http://127.0.0.1:3000/api/version1/products/${row._id}`, {
-        method: "DELETE",
-      });
+      await deleteProduct(row._id);
+      toast.success("Product deleted successfully");
 
-      fetchProducts();
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch (error) {
-      console.error(error);
+      console.error("Delete failed:", error);
+      toast.error(error.message || "Failed to delete product");
     }
+  };
+  const handleAddProduct = async (data) => {
+    const responseData = await createProduct(data);
+
+    if (responseData.status === "success") {
+      toast.success("Product created successfully");
+    }
+
+    return responseData;
+  };
+
+  const handleUpdateProduct = async (data) => {
+    const responseData = await updateProduct(selectedProduct._id, data);
+    if (responseData.status === "success") {
+      toast.success("Product updated successfully");
+    }
+
+    return responseData;
   };
   const onSubmit = async (data) => {
     try {
-      const response = await fetch(
-        "http://127.0.0.1:3000/api/version1/products",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        },
-      );
-      const data1 = await response.json();
-      console.log(data1);
-      toast.success("Product created successfully");
+      if (selectedProduct) {
+        await handleUpdateProduct(data);
+      } else {
+        await handleAddProduct(data);
+      }
       handleClose();
-      fetchProducts();
+
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch (error) {
-      toast.error(error);
-      console.log(error);
+      toast.error(error.message || "Something went wrong");
+      console.error("Submission failed:", error);
     }
   };
   return (
@@ -137,7 +176,7 @@ export default function Products() {
       <ProductTable
         headers={headers}
         accessors={accessors}
-        data={products}
+        data={data || []}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
@@ -145,7 +184,7 @@ export default function Products() {
         <Button
           variant="contained"
           onClick={handleOpen}
-          sx={{ marginLeft: "auto", backgroundColor: "#0b7285" }}
+          sx={{ marginLeft: "auto", backgroundColor: "black" }}
         >
           Add Product
         </Button>
@@ -161,7 +200,7 @@ export default function Products() {
           control={control}
           errors={errors}
           onSubmit={handleSubmit(onSubmit)}
-          submitLabel="Add Product"
+          submitLabel={selectedProduct ? "Update Product" : "Add Product"}
         />
       </AddProductModal>
     </>
