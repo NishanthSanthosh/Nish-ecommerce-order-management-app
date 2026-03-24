@@ -14,6 +14,7 @@ import Analytics from "./pages/analytics";
 import Settings from "./pages/settings";
 import { ToastContainer } from "react-toastify";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import ErrorBoundary from "./ErrorHandler/ErrorBoundary";
 
 export default function App() {
   const queryClient = new QueryClient();
@@ -23,19 +24,91 @@ export default function App() {
         <ToastContainer position="top-right" autoClose={3000} />
         <Routes>
           <Route element={<AuthLayout />}>
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/login" element={<Login />} />
+            <Route
+              path="/signup"
+              element={
+                <ErrorBoundary>
+                  <Signup />{" "}
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <ErrorBoundary>
+                  <Login />
+                </ErrorBoundary>
+              }
+            />
           </Route>
           <Route element={<DashboardLayout />}>
+            {/* <ErrorBoundary> */}
             <Route path="/" element={<Navigate to="/users" />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/users" element={<Users />} />
-            <Route path="/coupons" element={<Coupons />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ErrorBoundary>
+                  <Dashboard />{" "}
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/products"
+              element={
+                <ErrorBoundary>
+                  <Products />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/categories"
+              element={
+                <ErrorBoundary>
+                  <Categories />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <ErrorBoundary>
+                  <Orders />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ErrorBoundary>
+                  <Users />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/coupons"
+              element={
+                <ErrorBoundary>
+                  <Coupons />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <ErrorBoundary>
+                  <Analytics />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ErrorBoundary>
+                  <Settings />
+                </ErrorBoundary>
+              }
+            />
+            {/* </ErrorBoundary> */}
           </Route>
         </Routes>
       </QueryClientProvider>
