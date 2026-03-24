@@ -1,21 +1,15 @@
 import { Toolbar, Button } from "@mui/material";
 import ProductTable from "../components/table";
 import AddProductForm from "../components/form";
-import { useState } from "react";
+import { useEffect } from "react";
+import useModal from "../hooks/useProductModal";
 import AddProductModal from "../components/modal";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-// import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-const headers = [
-  "Product ID",
-  "Product Name",
-  "Category",
-  "Price ($)",
-  "Stock",
-  "Rating",
-];
-// const accessors = ["id", "name", "category", "price", "stock", "rating"];
+import productFields from "../data/productFormData";
+import { headers } from "../data/productTableData";
+import { accessors } from "../data/productTableData";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   createProduct,
   updateProduct,
@@ -24,69 +18,14 @@ import {
 } from "../services/productService";
 import { useQueryClient } from "@tanstack/react-query";
 
-const accessors = ["_id", "product", "category", "price", "stock", "rating"];
-const productFields = [
-  {
-    name: "product",
-    label: "Product Name",
-    placeholder: "e.g., Organic Red Apples",
-    validation: {
-      required: "Product name is required",
-      minLength: { value: 3, message: "Minimum 3 characters" },
-      maxLength: { value: 50, message: "Maximum 50 characters" },
-      pattern: {
-        value: /^[a-zA-Z0-9\s&'-]+$/,
-        message: "Only alphanumeric characters allowed",
-      },
-      validate: (value) =>
-        value.trim().length >= 3 || "Name cannot be just spaces",
-    },
-  },
-  {
-    name: "category",
-    label: "Category",
-    type: "select",
-    options: [
-      { label: "Vegetables", value: "Vegetables" },
-      { label: "Fruits", value: "Fruits" },
-      { label: "Dairy", value: "Dairy" },
-    ],
-    validation: {
-      required: "Please select a category",
-    },
-  },
-  {
-    name: "price",
-    label: "Price",
-    type: "number",
-    inputProps: { step: "0.01", min: "0" },
-    validation: {
-      required: "Price is required",
-      min: { value: 0.01, message: "Price must be at least 0.01" },
-      max: { value: 100, message: "Price exceeds maximum limit" },
-      pattern: {
-        value: /^\d+(\.\d{1,2})?$/,
-        message: "Maximum 2 decimal places allowed",
-      },
-    },
-  },
-  {
-    name: "stock",
-    label: "Stock Quantity",
-    type: "number",
-    validation: {
-      required: "Stock is required",
-      min: { value: 0, message: "Stock cannot be negative" },
-      max: { value: 99999, message: "Stock exceeds warehouse capacity" },
-      validate: (value) =>
-        Number.isInteger(Number(value)) || "Stock must be a whole number",
-    },
-  },
-];
-
 export default function Products() {
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
+  const {
+    open,
+    selectedItem: selectedProduct,
+    openModal,
+    closeModal,
+  } = useModal();
   const {
     register,
     control,
@@ -96,8 +35,13 @@ export default function Products() {
   } = useForm({
     mode: "onBlur",
   });
-
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  useEffect(() => {
+    if (selectedProduct) {
+      reset(selectedProduct); // pre-fill form
+    } else {
+      reset({}); // empty form
+    }
+  }, [selectedProduct, reset]);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["products"], // query key
@@ -108,60 +52,56 @@ export default function Products() {
     staleTime: 5000, // optional
     refetchOnWindowFocus: true,
   });
+  const addProductMutation = useMutation({
+    mutationFn: createProduct,
+    onSuccess: () => {
+      toast.success("Product created successfully");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to create product");
+    },
+  });
+  const updateProductMutation = useMutation({
+    mutationFn: ({ id, data }) => updateProduct(id, data),
+    onSuccess: () => {
+      toast.success("Product updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to update product");
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: (id) => deleteProduct(id),
+    onSuccess: () => {
+      toast.success("Product deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to delete product");
+    },
+  });
 
   if (isLoading) return <div>Loading products...</div>;
   if (isError) return <div>Error: {error.message}</div>;
-  const handleOpen = () => {
-    setOpen(true);
-    reset({});
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedProduct(null);
-    reset({});
-  };
+  const handleClose = () => closeModal();
   const handleEdit = (row) => {
-    setSelectedProduct(row);
-    reset(row);
-    setOpen(true);
+    openModal(row);
   };
-
-  const handleDelete = async (row) => {
-    try {
-      await deleteProduct(row._id);
-      toast.success("Product deleted successfully");
-
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-    } catch (error) {
-      console.error("Delete failed:", error);
-      toast.error(error.message || "Failed to delete product");
-    }
-  };
-  const handleAddProduct = async (data) => {
-    const responseData = await createProduct(data);
-
-    if (responseData.status === "success") {
-      toast.success("Product created successfully");
-    }
-
-    return responseData;
-  };
-
-  const handleUpdateProduct = async (data) => {
-    const responseData = await updateProduct(selectedProduct._id, data);
-    if (responseData.status === "success") {
-      toast.success("Product updated successfully");
-    }
-
-    return responseData;
+  const handleDelete = (row) => {
+    deleteProductMutation.mutate(row._id);
   };
   const onSubmit = async (data) => {
     try {
       if (selectedProduct) {
-        await handleUpdateProduct(data);
+        updateProductMutation.mutate({
+          id: selectedProduct._id,
+          data: data,
+        });
       } else {
-        await handleAddProduct(data);
+        addProductMutation.mutate(data);
       }
       handleClose();
 
@@ -183,7 +123,10 @@ export default function Products() {
       <Toolbar sx={{ display: "flex" }}>
         <Button
           variant="contained"
-          onClick={handleOpen}
+          onClick={() => {
+            openModal();
+            reset({});
+          }}
           sx={{ marginLeft: "auto", backgroundColor: "black" }}
         >
           Add Product
@@ -192,7 +135,7 @@ export default function Products() {
       <AddProductModal
         open={open}
         onClose={handleClose}
-        title="Add New Product"
+        title={selectedProduct ? "Edit Product" : "Add Product"}
       >
         <AddProductForm
           fields={productFields}
