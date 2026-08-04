@@ -5,6 +5,7 @@ const orderRouter = require("./routes/orderRoutes");
 const userRouter = require("./routes/userRoutes");
 const couponRouter = require("./routes/couponRoutes");
 const settingsRouter = require("./routes/settingsRoutes");
+const authRouter = require("./routes/authRoutes");
 const app = express();
 app.use(express.json());
 const cors = require("cors");
@@ -15,6 +16,7 @@ app.use(
     credentials: true,
   }),
 );
+app.use("/api/version1/auth", authRouter);
 app.use("/api/version1/products", productRouter);
 app.use("/api/version1/categories", categoryRouter);
 app.use("/api/version1/orders", orderRouter);

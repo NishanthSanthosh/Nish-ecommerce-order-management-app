@@ -38,9 +38,9 @@ export default function Products() {
   });
   useEffect(() => {
     if (selectedProduct) {
-      reset(selectedProduct); // pre-fill form
+      reset(selectedProduct);
     } else {
-      reset({}); // empty form
+      reset({});
     }
   }, [selectedProduct, reset]);
 
@@ -50,12 +50,12 @@ export default function Products() {
     isError: isProductsError,
     error: productsError,
   } = useQuery({
-    queryKey: ["products"], // query key
+    queryKey: ["products"],
     queryFn: async () => {
       const response = await getProducts();
       return response?.data?.products || [];
     },
-    staleTime: 5000, // optional
+    staleTime: 5000,
     refetchOnWindowFocus: true,
   });
 

@@ -8,7 +8,6 @@ import CategoryIcon from "@mui/icons-material/Category";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PeopleIcon from "@mui/icons-material/People";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
-// import BarChartIcon from "@mui/icons-material/BarChart";
 import SettingsIcon from "@mui/icons-material/Settings";
 import Topbar from "../../components/appBar";
 
@@ -21,8 +20,6 @@ const menuItems = [
   { label: "Orders", icon: <ShoppingCartIcon />, path: "/orders" },
   { label: "Users", icon: <PeopleIcon />, path: "/users" },
   { label: "Coupons", icon: <LocalOfferIcon />, path: "/coupons" },
-  // Analytics is paused until reporting is fully implemented.
-  // { label: "Analytics", icon: <BarChartIcon />, path: "/analytics" },
   { label: "Settings", icon: <SettingsIcon />, path: "/settings" },
 ];
 export default function DashboardLayout() {
@@ -52,10 +49,11 @@ export default function DashboardLayout() {
         component="main"
         sx={{
           flexGrow: 1,
+          minWidth: 0,
           minHeight: "100vh",
           px: { xs: 2, sm: 3, lg: 4 },
           py: { xs: 2, sm: 3 },
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: { xs: "100%", sm: `calc(100% - ${drawerWidth}px)` },
           overflow: "hidden",
         }}
       >
@@ -64,6 +62,7 @@ export default function DashboardLayout() {
           sx={{
             mx: "auto",
             maxWidth: "1440px",
+            minWidth: 0,
             width: "100%",
           }}
         >

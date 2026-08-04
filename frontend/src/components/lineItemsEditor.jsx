@@ -125,7 +125,7 @@ export default function LineItemsEditor({
           <Box
             key={`${selectedItemId || "new"}-${index}`}
             sx={{
-              p: 2,
+              p: { xs: 1.5, sm: 2 },
               border: "1px solid #e5e7eb",
               borderRadius: 3,
               bgcolor: "#f8fafc",
@@ -143,6 +143,13 @@ export default function LineItemsEditor({
                   value={selectedItemId}
                   onChange={(event) => handleItemChange(index, event.target.value)}
                   fullWidth
+                  SelectProps={{
+                    MenuProps: {
+                      PaperProps: {
+                        sx: { maxWidth: "calc(100vw - 32px)" },
+                      },
+                    },
+                  }}
                   helperText={
                     selectedCatalogItem
                       ? `${stockLimit} available at $${getCatalogItemPrice(
@@ -181,13 +188,17 @@ export default function LineItemsEditor({
                     handleQuantityChange(index, event.target.value)
                   }
                   inputProps={{ min: 1, max: stockLimit }}
-                  sx={{ minWidth: { sm: 140 } }}
+                  fullWidth
+                  sx={{ minWidth: { sm: 140 }, maxWidth: { sm: 160 } }}
                 />
 
                 <IconButton
                   color="error"
                   onClick={() => removeLineItem(index)}
-                  sx={{ mt: { sm: 1 } }}
+                  sx={{
+                    alignSelf: { xs: "flex-end", sm: "center" },
+                    mt: { sm: 1 },
+                  }}
                 >
                   <DeleteIcon />
                 </IconButton>
@@ -206,7 +217,11 @@ export default function LineItemsEditor({
         startIcon={<AddIcon />}
         onClick={addLineItem}
         disabled={lineItems.length >= availableItemCount}
-        sx={{ alignSelf: "flex-start", borderRadius: 2, fontWeight: 800 }}
+        sx={{
+          alignSelf: { xs: "stretch", sm: "flex-start" },
+          borderRadius: 2,
+          fontWeight: 800,
+        }}
       >
         {addButtonLabel}
       </Button>

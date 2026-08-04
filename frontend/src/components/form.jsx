@@ -29,6 +29,7 @@ const ReusableForm = ({
                 {...controllerField}
                 value={controllerField.value ?? ""}
                 select
+                fullWidth
                 label={field.label}
                 disabled={field.disabled}
                 placeholder={field.placeholder}
@@ -48,6 +49,7 @@ const ReusableForm = ({
             key={field.name}
             label={field.label}
             type={field.type || "text"}
+            fullWidth
             disabled={field.disabled}
             placeholder={field.placeholder}
             multiline={field.multiline}
@@ -66,7 +68,10 @@ const ReusableForm = ({
       <Button
         type="submit"
         variant="contained"
-        sx={{ backgroundColor: "black" }}
+        sx={{
+          alignSelf: { xs: "stretch", sm: "flex-start" },
+          backgroundColor: "black",
+        }}
       >
         {submitLabel}
       </Button>

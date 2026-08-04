@@ -19,11 +19,11 @@ exports.createProduct = async (req, res) => {
 };
 exports.updateProduct = async (req, res) => {
   try {
-    const id = req.params.id; // assuming the product ID comes in the URL
+    const id = req.params.id;
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      req.body, // the fields to update
-      { new: true, runValidators: true }, // return the updated doc & validate
+      req.body,
+      { new: true, runValidators: true },
     );
 
     if (!updatedProduct) {
@@ -48,7 +48,6 @@ exports.updateProduct = async (req, res) => {
 };
 exports.getAllProducts = async (req, res) => {
   try {
-    // console.log(req.body);
     const products = await Product.find();
     res.status(200).json({
       status: "success",

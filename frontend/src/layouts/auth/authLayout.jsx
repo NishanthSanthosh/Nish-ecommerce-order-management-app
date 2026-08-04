@@ -1,11 +1,10 @@
-import { Box, CssBaseline, Container } from "@mui/material";
+import { Box, CssBaseline } from "@mui/material";
 import { Outlet } from "react-router-dom";
 
 export default function AuthLayout() {
   return (
     <>
       <CssBaseline />
-      {/* <Container maxWidth="xl"> */}
       <Box
         sx={{
           width: "100%",
@@ -17,7 +16,6 @@ export default function AuthLayout() {
       >
         <Outlet />
       </Box>
-      {/* </Container> */}
     </>
   );
 }

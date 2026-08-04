@@ -7,13 +7,14 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: { xs: "calc(100% - 32px)", sm: 520 },
-  maxHeight: "90vh",
+  width: { xs: "calc(100vw - 24px)", sm: 560, md: 640 },
+  maxWidth: "100%",
+  maxHeight: { xs: "92vh", sm: "90vh" },
   overflowY: "auto",
   bgcolor: "background.paper",
-  borderRadius: 2,
+  borderRadius: { xs: 3, sm: 4 },
   boxShadow: 24,
-  p: 4,
+  p: { xs: 2.5, sm: 4 },
 };
 const ReusableModal = ({ open, onClose, title, children }) => {
   return (

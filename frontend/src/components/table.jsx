@@ -24,8 +24,17 @@ const ReusableTable = ({ headers, data, accessors, onEdit, onDelete }) => {
         boxShadow: "0 18px 45px rgba(15, 23, 42, 0.06)",
       }}
     >
-      <TableContainer>
-        <Table sx={{ minWidth: 720 }}>
+      <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+        <Table
+          sx={{
+            minWidth: { xs: 760, md: 720 },
+            "& th, & td": {
+              px: { xs: 1.5, sm: 2 },
+              py: { xs: 1.25, sm: 1.75 },
+              whiteSpace: "nowrap",
+            },
+          }}
+        >
           <TableHead>
             <TableRow sx={{ bgcolor: "#f8fafc" }}>
               {headers.map((header, index) => (

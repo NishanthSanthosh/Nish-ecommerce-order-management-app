@@ -1,9 +1,18 @@
+import { getStoredToken } from "../services/authStorage";
+
 const BASE_URL = "http://127.0.0.1:3000/api/version1";
 
 export const apiRequest = async (endpoint, options = {}) => {
+  const token = getStoredToken();
+  const headers = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+
   const response = await fetch(`${BASE_URL}${endpoint}`, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers,
   });
 
   const data = await response.json();
@@ -18,12 +27,16 @@ export const apiRequest = async (endpoint, options = {}) => {
   return data;
 };
 export const apiDelete = async (endpoint, options = {}) => {
+  const token = getStoredToken();
+  const headers = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
+
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     method: "DELETE",
     ...options,
-    headers: {
-      ...options.headers,
-    },
+    headers,
   });
   if (
     response.status === 204 ||
