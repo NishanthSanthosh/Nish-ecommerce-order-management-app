@@ -8,6 +8,7 @@ const ReusableForm = ({
   errors,
   onSubmit,
   submitLabel,
+  children,
 }) => {
   return (
     <Box
@@ -21,16 +22,20 @@ const ReusableForm = ({
             key={field.name}
             name={field.name}
             control={control}
+            defaultValue=""
             rules={field.validation}
             render={({ field: controllerField }) => (
               <TextField
                 {...controllerField}
+                value={controllerField.value ?? ""}
                 select
                 label={field.label}
+                disabled={field.disabled}
+                placeholder={field.placeholder}
                 error={!!errors[field.name]}
-                helperText={errors[field.name]?.message}
+                helperText={errors[field.name]?.message || field.helperText}
               >
-                {field.options.map((opt) => (
+                {(field.options || []).map((opt) => (
                   <MenuItem key={opt.value} value={opt.value}>
                     {opt.label}
                   </MenuItem>
@@ -43,13 +48,20 @@ const ReusableForm = ({
             key={field.name}
             label={field.label}
             type={field.type || "text"}
+            disabled={field.disabled}
+            placeholder={field.placeholder}
+            multiline={field.multiline}
+            rows={field.rows}
+            InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
             error={!!errors[field.name]}
-            helperText={errors[field.name]?.message}
+            helperText={errors[field.name]?.message || field.helperText}
             inputProps={field.inputProps}
             {...register(field.name, field.validation)}
           />
         ),
       )}
+
+      {children}
 
       <Button
         type="submit"

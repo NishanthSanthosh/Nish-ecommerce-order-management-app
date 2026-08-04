@@ -8,10 +8,12 @@ import CategoryIcon from "@mui/icons-material/Category";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PeopleIcon from "@mui/icons-material/People";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
-import BarChartIcon from "@mui/icons-material/BarChart";
+// import BarChartIcon from "@mui/icons-material/BarChart";
 import SettingsIcon from "@mui/icons-material/Settings";
 import Topbar from "../../components/appBar";
-const drawerWidth = 240;
+
+const drawerWidth = 280;
+
 const menuItems = [
   { label: "Dashboard", icon: <HomeIcon />, path: "/dashboard" },
   { label: "Products", icon: <Inventory2Icon />, path: "/products" },
@@ -19,7 +21,8 @@ const menuItems = [
   { label: "Orders", icon: <ShoppingCartIcon />, path: "/orders" },
   { label: "Users", icon: <PeopleIcon />, path: "/users" },
   { label: "Coupons", icon: <LocalOfferIcon />, path: "/coupons" },
-  { label: "Analytics", icon: <BarChartIcon />, path: "/analytics" },
+  // Analytics is paused until reporting is fully implemented.
+  // { label: "Analytics", icon: <BarChartIcon />, path: "/analytics" },
   { label: "Settings", icon: <SettingsIcon />, path: "/settings" },
 ];
 export default function DashboardLayout() {
@@ -30,7 +33,7 @@ export default function DashboardLayout() {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f8fafc" }}>
       <CssBaseline />
 
       <Topbar
@@ -42,18 +45,30 @@ export default function DashboardLayout() {
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
         menuItems={menuItems}
+        drawerWidth={drawerWidth}
       />
 
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          minHeight: "100vh",
+          px: { xs: 2, sm: 3, lg: 4 },
+          py: { xs: 2, sm: 3 },
           width: { sm: `calc(100% - ${drawerWidth}px)` },
+          overflow: "hidden",
         }}
       >
-        <Toolbar />
-        <Outlet />
+        <Toolbar sx={{ minHeight: { xs: 72, sm: 80 } }} />
+        <Box
+          sx={{
+            mx: "auto",
+            maxWidth: "1440px",
+            width: "100%",
+          }}
+        >
+          <Outlet />
+        </Box>
       </Box>
     </Box>
   );

@@ -19,11 +19,7 @@ const productFields = [
     name: "category",
     label: "Category",
     type: "select",
-    options: [
-      { label: "Vegetables", value: "Vegetables" },
-      { label: "Fruits", value: "Fruits" },
-      { label: "Dairy", value: "Dairy" },
-    ],
+    options: [],
     validation: {
       required: "Please select a category",
     },

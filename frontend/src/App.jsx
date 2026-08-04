@@ -10,7 +10,7 @@ import Products from "./pages/products";
 import Categories from "./pages/categories";
 import Orders from "./pages/orders";
 import Coupons from "./pages/coupons";
-import Analytics from "./pages/analytics";
+// import Analytics from "./pages/analytics";
 import Settings from "./pages/settings";
 import { ToastContainer } from "react-toastify";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -92,14 +92,15 @@ export default function App() {
                 </ErrorBoundary>
               }
             />
-            <Route
+            {/* Analytics is paused until reporting is fully implemented. */}
+            {/* <Route
               path="/analytics"
               element={
                 <ErrorBoundary>
                   <Analytics />
                 </ErrorBoundary>
               }
-            />
+            /> */}
             <Route
               path="/settings"
               element={

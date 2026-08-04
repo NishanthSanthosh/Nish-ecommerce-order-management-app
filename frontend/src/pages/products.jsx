@@ -1,7 +1,7 @@
-import { Toolbar, Button } from "@mui/material";
+import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import ProductTable from "../components/table";
 import AddProductForm from "../components/form";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import useModal from "../hooks/useProductModal";
 import AddProductModal from "../components/modal";
 import { useForm } from "react-hook-form";
@@ -16,6 +16,7 @@ import {
   deleteProduct,
   getProducts,
 } from "../services/productService";
+import { getCategories } from "../services/categoryService";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function Products() {
@@ -43,7 +44,12 @@ export default function Products() {
     }
   }, [selectedProduct, reset]);
 
-  const { data, isLoading, isError, error } = useQuery({
+  const {
+    data: products,
+    isLoading: isProductsLoading,
+    isError: isProductsError,
+    error: productsError,
+  } = useQuery({
     queryKey: ["products"], // query key
     queryFn: async () => {
       const response = await getProducts();
@@ -52,6 +58,59 @@ export default function Products() {
     staleTime: 5000, // optional
     refetchOnWindowFocus: true,
   });
+
+  const {
+    data: categories,
+    isLoading: isCategoriesLoading,
+    isError: isCategoriesError,
+    error: categoriesError,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await getCategories();
+      return response?.data?.categories || [];
+    },
+    staleTime: 5000,
+    refetchOnWindowFocus: true,
+  });
+
+  const categoryOptions = useMemo(() => {
+    const options = (categories || []).map((item) => ({
+      label: item.category,
+      value: item.category,
+    }));
+
+    if (
+      selectedProduct?.category &&
+      !options.some((option) => option.value === selectedProduct.category)
+    ) {
+      options.push({
+        label: selectedProduct.category,
+        value: selectedProduct.category,
+      });
+    }
+
+    return options;
+  }, [categories, selectedProduct]);
+
+  const productFieldsWithCategories = useMemo(
+    () =>
+      productFields.map((field) =>
+        field.name === "category"
+          ? {
+              ...field,
+              options: categoryOptions,
+              disabled: categoryOptions.length === 0,
+              helperText:
+                categoryOptions.length === 0
+                  ? "Create a category before adding products."
+                  : undefined,
+            }
+          : field,
+      ),
+    [categoryOptions],
+  );
+
   const addProductMutation = useMutation({
     mutationFn: createProduct,
     onSuccess: () => {
@@ -84,8 +143,37 @@ export default function Products() {
     },
   });
 
-  if (isLoading) return <div>Loading products...</div>;
-  if (isError) return <div>Error: {error.message}</div>;
+  if (isProductsLoading || isCategoriesLoading) {
+    return (
+      <Paper
+        elevation={0}
+        sx={{
+          p: 4,
+          border: "1px solid #e5e7eb",
+          borderRadius: 4,
+        }}
+      >
+        <Typography color="text.secondary">Loading products...</Typography>
+      </Paper>
+    );
+  }
+  if (isProductsError || isCategoriesError) {
+    return (
+      <Paper
+        elevation={0}
+        sx={{
+          p: 4,
+          border: "1px solid #fee2e2",
+          borderRadius: 4,
+          bgcolor: "#fef2f2",
+        }}
+      >
+        <Typography color="error">
+          Error: {productsError?.message || categoriesError?.message}
+        </Typography>
+      </Paper>
+    );
+  }
   const handleClose = () => closeModal();
   const handleEdit = (row) => {
     openModal(row);
@@ -112,33 +200,70 @@ export default function Products() {
     }
   };
   return (
-    <>
+    <Stack spacing={3}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          border: "1px solid #e5e7eb",
+          borderRadius: 4,
+          background:
+            "linear-gradient(135deg, rgba(20, 184, 166, 0.08), rgba(255, 255, 255, 0.95))",
+        }}
+      >
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          alignItems={{ xs: "stretch", sm: "center" }}
+          justifyContent="space-between"
+        >
+          <Box>
+            <Typography variant="overline" color="text.secondary" fontWeight={800}>
+              Inventory
+            </Typography>
+            <Typography variant="h4" fontWeight={900} sx={{ mt: 0.5 }}>
+              Product Catalog
+            </Typography>
+            <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 620 }}>
+              Keep grocery items updated with current stock, pricing, and
+              category details.
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            onClick={() => {
+              openModal();
+              reset({});
+            }}
+            sx={{
+              alignSelf: { xs: "stretch", sm: "center" },
+              bgcolor: "#0f766e",
+              borderRadius: 2,
+              px: 3,
+              py: 1.25,
+              fontWeight: 800,
+              boxShadow: "0 12px 24px rgba(15, 118, 110, 0.2)",
+              "&:hover": { bgcolor: "#115e59" },
+            }}
+          >
+            Add Product
+          </Button>
+        </Stack>
+      </Paper>
       <ProductTable
         headers={headers}
         accessors={accessors}
-        data={data || []}
+        data={products || []}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
-      <Toolbar sx={{ display: "flex" }}>
-        <Button
-          variant="contained"
-          onClick={() => {
-            openModal();
-            reset({});
-          }}
-          sx={{ marginLeft: "auto", backgroundColor: "black" }}
-        >
-          Add Product
-        </Button>
-      </Toolbar>
       <AddProductModal
         open={open}
         onClose={handleClose}
         title={selectedProduct ? "Edit Product" : "Add Product"}
       >
         <AddProductForm
-          fields={productFields}
+          fields={productFieldsWithCategories}
           register={register}
           control={control}
           errors={errors}
@@ -146,6 +271,6 @@ export default function Products() {
           submitLabel={selectedProduct ? "Update Product" : "Add Product"}
         />
       </AddProductModal>
-    </>
+    </Stack>
   );
 }

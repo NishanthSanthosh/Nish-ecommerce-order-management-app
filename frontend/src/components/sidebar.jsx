@@ -7,42 +7,79 @@ import {
   ListItemIcon,
   ListItemText,
   Box,
+  Typography,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import Logo from "./logo";
-
-const drawerWidth = 240;
 
 export default function SidebarDrawer({
   mobileOpen,
   setMobileOpen,
   menuItems,
+  drawerWidth,
 }) {
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
   const drawer = (
-    <div>
+    <Box sx={{ display: "flex", minHeight: "100%", flexDirection: "column" }}>
       <Logo />
-      <Divider />
-      <List>
+      <Divider sx={{ borderColor: "#e5e7eb" }} />
+      <List sx={{ flexGrow: 1, px: 2, py: 2 }}>
         {menuItems.map(({ label, icon, path }) => (
-          <Link
-            to={path}
-            key={path}
-            style={{ textDecoration: "none", color: "inherit" }}
-          >
-            <ListItem key={label} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>{icon}</ListItemIcon>
-                <ListItemText primary={label} />
-              </ListItemButton>
-            </ListItem>
-          </Link>
+          <NavLink to={path} key={path} onClick={() => setMobileOpen(false)}>
+            {({ isActive }) => (
+              <ListItem disablePadding sx={{ mb: 0.75 }}>
+                <ListItemButton
+                  sx={{
+                    borderRadius: 2,
+                    minHeight: 48,
+                    px: 2,
+                    color: isActive ? "#0f766e" : "#475569",
+                    bgcolor: isActive
+                      ? "rgba(20, 184, 166, 0.12)"
+                      : "transparent",
+                    "&:hover": {
+                      bgcolor: isActive
+                        ? "rgba(20, 184, 166, 0.16)"
+                        : "#f1f5f9",
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 40, color: "inherit" }}>
+                    {icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={label}
+                    primaryTypographyProps={{
+                      fontSize: 14,
+                      fontWeight: isActive ? 800 : 600,
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            )}
+          </NavLink>
         ))}
       </List>
-    </div>
+      <Box
+        sx={{
+          m: 2,
+          p: 2,
+          borderRadius: 3,
+          bgcolor: "#f8fafc",
+          border: "1px solid #e5e7eb",
+        }}
+      >
+        <Typography variant="caption" color="text.secondary">
+          Admin Workspace
+        </Typography>
+        <Typography variant="body2" fontWeight={700} sx={{ mt: 0.25 }}>
+          Manage products, orders, and customers from one place.
+        </Typography>
+      </Box>
+    </Box>
   );
 
   return (
@@ -57,7 +94,11 @@ export default function SidebarDrawer({
         ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: "block", sm: "none" },
-          "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box" },
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            borderRight: "1px solid #e5e7eb",
+          },
         }}
       >
         {drawer}
@@ -66,7 +107,12 @@ export default function SidebarDrawer({
         variant="permanent"
         sx={{
           display: { xs: "none", sm: "block" },
-          "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box" },
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            borderRight: "1px solid #e5e7eb",
+            boxShadow: "8px 0 24px rgba(15, 23, 42, 0.04)",
+          },
         }}
         open
       >

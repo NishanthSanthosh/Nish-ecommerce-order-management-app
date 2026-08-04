@@ -17,6 +17,7 @@ const productSchema = new mongoose.Schema({
   stock: {
     type: Number,
     required: [true, "A product must have a stock"],
+    min: [0, "Product stock cannot be negative"],
   },
   rating: {
     type: Number,

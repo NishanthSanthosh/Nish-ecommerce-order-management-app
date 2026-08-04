@@ -1,5 +1,10 @@
 const express = require("express");
 const productRouter = require("./routes/productRoutes");
+const categoryRouter = require("./routes/categoryRoutes");
+const orderRouter = require("./routes/orderRoutes");
+const userRouter = require("./routes/userRoutes");
+const couponRouter = require("./routes/couponRoutes");
+const settingsRouter = require("./routes/settingsRoutes");
 const app = express();
 app.use(express.json());
 const cors = require("cors");
@@ -11,6 +16,11 @@ app.use(
   }),
 );
 app.use("/api/version1/products", productRouter);
+app.use("/api/version1/categories", categoryRouter);
+app.use("/api/version1/orders", orderRouter);
+app.use("/api/version1/users", userRouter);
+app.use("/api/version1/coupons", couponRouter);
+app.use("/api/version1/settings", settingsRouter);
 app.use((req, res, next) => {
   const err = new Error(`Can't find ${req.originalUrl} in this server!`);
   err.status = "fail";
