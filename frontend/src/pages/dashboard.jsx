@@ -6,8 +6,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { getProducts } from "../services/productService";
 import { getCategories } from "../services/categoryService";
 import { getOrders } from "../services/orderService";
@@ -56,116 +55,100 @@ const StatCard = ({ label, value, helper }) => (
 );
 
 export default function Dashboard() {
-  const productsQuery = useQuery({
-    queryKey: ["products"],
-    queryFn: async () => {
-      const response = await getProducts();
-      return response?.data?.products || [];
-    },
-  });
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [coupons, setCoupons] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const categoriesQuery = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const response = await getCategories();
-      return response?.data?.categories || [];
-    },
-  });
+  useEffect(() => {
+    let isCancelled = false;
 
-  const ordersQuery = useQuery({
-    queryKey: ["orders"],
-    queryFn: async () => {
-      const response = await getOrders();
-      return response?.data?.orders || [];
-    },
-  });
+    const loadDashboardData = async () => {
+      try {
+        const [
+          productsResponse,
+          categoriesResponse,
+          ordersResponse,
+          usersResponse,
+          couponsResponse,
+        ] = await Promise.all([
+          getProducts(),
+          getCategories(),
+          getOrders(),
+          getUsers(),
+          getCoupons(),
+        ]);
 
-  const usersQuery = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => {
-      const response = await getUsers();
-      return response?.data?.users || [];
-    },
-  });
-
-  const couponsQuery = useQuery({
-    queryKey: ["coupons"],
-    queryFn: async () => {
-      const response = await getCoupons();
-      return response?.data?.coupons || [];
-    },
-  });
-
-  const isLoading =
-    productsQuery.isLoading ||
-    categoriesQuery.isLoading ||
-    ordersQuery.isLoading ||
-    usersQuery.isLoading ||
-    couponsQuery.isLoading;
-
-  const error =
-    productsQuery.error ||
-    categoriesQuery.error ||
-    ordersQuery.error ||
-    usersQuery.error ||
-    couponsQuery.error;
-
-  const metrics = useMemo(() => {
-    const products = productsQuery.data || [];
-    const categories = categoriesQuery.data || [];
-    const orders = ordersQuery.data || [];
-    const users = usersQuery.data || [];
-    const coupons = couponsQuery.data || [];
-
-    const totalStock = products.reduce(
-      (total, product) => total + Number(product.stock || 0),
-      0,
-    );
-    const lowStockProducts = products.filter(
-      (product) => Number(product.stock || 0) <= 5,
-    );
-    const paidRevenue = orders
-      .filter((order) => order.paymentStatus === "Paid")
-      .reduce((total, order) => total + Number(order.totalAmount || 0), 0);
-    const pendingPaymentAmount = orders
-      .filter((order) => order.paymentStatus === "Pending")
-      .reduce((total, order) => total + Number(order.totalAmount || 0), 0);
-    const totalOrderValue = orders.reduce(
-      (total, order) => total + Number(order.totalAmount || 0),
-      0,
-    );
-    const openOrders = orders.filter(isOpenOrder);
-    const customers = users.filter((user) => user.role === "Customer");
-    const admins = users.filter((user) => user.role === "Admin");
-    const activeCoupons = coupons.filter(isActiveCoupon);
-    const recentOrders = [...orders]
-      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
-      .slice(0, 5);
-
-    return {
-      products,
-      categories,
-      orders,
-      users,
-      coupons,
-      totalStock,
-      lowStockProducts,
-      paidRevenue,
-      pendingPaymentAmount,
-      totalOrderValue,
-      openOrders,
-      customers,
-      admins,
-      activeCoupons,
-      recentOrders,
+        if (!isCancelled) {
+          setProducts(productsResponse?.data?.products || []);
+          setCategories(categoriesResponse?.data?.categories || []);
+          setOrders(ordersResponse?.data?.orders || []);
+          setUsers(usersResponse?.data?.users || []);
+          setCoupons(couponsResponse?.data?.coupons || []);
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setError(error);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
     };
-  }, [
-    categoriesQuery.data,
-    couponsQuery.data,
-    ordersQuery.data,
-    productsQuery.data,
-    usersQuery.data,
-  ]);
+
+    loadDashboardData();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  const totalStock = products.reduce(
+    (total, product) => total + Number(product.stock || 0),
+    0,
+  );
+  const lowStockProducts = products.filter(
+    (product) => Number(product.stock || 0) <= 5,
+  );
+  const paidRevenue = orders
+    .filter((order) => order.paymentStatus === "Paid")
+    .reduce((total, order) => total + Number(order.totalAmount || 0), 0);
+  const pendingPaymentAmount = orders
+    .filter((order) => order.paymentStatus === "Pending")
+    .reduce((total, order) => total + Number(order.totalAmount || 0), 0);
+  const totalOrderValue = orders.reduce(
+    (total, order) => total + Number(order.totalAmount || 0),
+    0,
+  );
+  const openOrders = orders.filter(isOpenOrder);
+  const customers = users.filter((user) => user.role === "Customer");
+  const admins = users.filter((user) => user.role === "Admin");
+  const activeCoupons = coupons.filter(isActiveCoupon);
+  const recentOrders = [...orders]
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    .slice(0, 5);
+
+  const metrics = {
+    products,
+    categories,
+    orders,
+    users,
+    coupons,
+    totalStock,
+    lowStockProducts,
+    paidRevenue,
+    pendingPaymentAmount,
+    totalOrderValue,
+    openOrders,
+    customers,
+    admins,
+    activeCoupons,
+    recentOrders,
+  };
 
   if (isLoading) {
     return (
@@ -205,19 +188,13 @@ export default function Dashboard() {
           p: { xs: 2.5, md: 3.5 },
           border: "1px solid #e5e7eb",
           borderRadius: 4,
-          background:
-            "linear-gradient(135deg, rgba(20, 184, 166, 0.08), rgba(255, 255, 255, 0.95))",
         }}
       >
-        <Typography variant="overline" color="text.secondary" fontWeight={800}>
-          Overview
-        </Typography>
-        <Typography variant="h4" fontWeight={900} sx={{ mt: 0.5 }}>
-          Store Performance
+        <Typography variant="h5" fontWeight={800}>
+          Dashboard
         </Typography>
         <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 720 }}>
-          Live operational metrics from products, orders, users, categories, and
-          coupons.
+          View live metrics for products, orders, users, categories, and coupons.
         </Typography>
       </Paper>
 

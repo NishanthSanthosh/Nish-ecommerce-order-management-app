@@ -76,10 +76,7 @@ exports.deleteCoupon = async (req, res) => {
       });
     }
 
-    res.status(204).json({
-      status: "success",
-      message: "Coupon deleted successfully",
-    });
+    res.status(204).send();
   } catch (err) {
     res.status(400).json({
       status: "fail",

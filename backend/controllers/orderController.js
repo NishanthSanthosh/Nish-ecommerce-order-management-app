@@ -363,10 +363,7 @@ exports.deleteOrder = async (req, res) => {
       throw err;
     }
 
-    res.status(204).json({
-      status: "success",
-      message: "Order deleted successfully",
-    });
+    res.status(204).send();
   } catch (err) {
     res.status(400).json({
       status: "fail",

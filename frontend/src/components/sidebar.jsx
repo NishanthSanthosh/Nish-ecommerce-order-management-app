@@ -7,7 +7,6 @@ import {
   ListItemIcon,
   ListItemText,
   Box,
-  Typography,
 } from "@mui/material";
 import { NavLink } from "react-router-dom";
 import Logo from "./logo";
@@ -63,22 +62,6 @@ export default function SidebarDrawer({
           </NavLink>
         ))}
       </List>
-      <Box
-        sx={{
-          m: 2,
-          p: 2,
-          borderRadius: 3,
-          bgcolor: "#f8fafc",
-          border: "1px solid #e5e7eb",
-        }}
-      >
-        <Typography variant="caption" color="text.secondary">
-          Admin Workspace
-        </Typography>
-        <Typography variant="body2" fontWeight={700} sx={{ mt: 0.25 }}>
-          Manage products, orders, and customers from one place.
-        </Typography>
-      </Box>
     </Box>
   );
 

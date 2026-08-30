@@ -1,17 +1,24 @@
-import { Box, Button, Paper, Stack, Typography } from "@mui/material";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "react-toastify";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import CategoryTable from "../components/table";
-import CategoryForm from "../components/form";
-import CategoryModal from "../components/modal";
-import useModal from "../hooks/useProductModal";
-import categoryFields from "../data/categoryFormData";
 import {
-  categoryAccessors,
-  categoryHeaders,
-} from "../data/categoryTableData";
+  Box,
+  Button,
+  IconButton,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import CategoryModal from "../components/modal";
+import useModal from "../hooks/useModal";
 import {
   createCategory,
   deleteCategory,
@@ -20,73 +27,45 @@ import {
 } from "../services/categoryService";
 
 export default function Categories() {
-  const queryClient = useQueryClient();
   const {
     open,
     selectedItem: selectedCategory,
     openModal,
     closeModal,
   } = useModal();
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm({
-    mode: "onBlur",
-  });
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({ category: "" });
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
-    if (selectedCategory) {
-      reset(selectedCategory);
-    } else {
-      reset({});
-    }
-  }, [selectedCategory, reset]);
+    let isCancelled = false;
 
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const response = await getCategories();
-      return response?.data?.categories || [];
-    },
-    staleTime: 5000,
-    refetchOnWindowFocus: true,
-  });
+    const loadCategories = async () => {
+      try {
+        const response = await getCategories();
 
-  const addCategoryMutation = useMutation({
-    mutationFn: createCategory,
-    onSuccess: () => {
-      toast.success("Category created successfully");
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to create category");
-    },
-  });
+        if (!isCancelled) {
+          setCategories(response?.data?.categories || []);
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setError(error);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
 
-  const updateCategoryMutation = useMutation({
-    mutationFn: ({ id, data }) => updateCategory(id, data),
-    onSuccess: () => {
-      toast.success("Category updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to update category");
-    },
-  });
+    loadCategories();
 
-  const deleteCategoryMutation = useMutation({
-    mutationFn: (id) => deleteCategory(id),
-    onSuccess: () => {
-      toast.success("Category deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to delete category");
-    },
-  });
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -103,7 +82,7 @@ export default function Categories() {
     );
   }
 
-  if (isError) {
+  if (error) {
     return (
       <Paper
         elevation={0}
@@ -122,25 +101,74 @@ export default function Categories() {
   const handleClose = () => closeModal();
 
   const handleEdit = (row) => {
+    setFormData({ category: row.category || "" });
+    setFormErrors({});
     openModal(row);
   };
 
   const handleDelete = (row) => {
-    deleteCategoryMutation.mutate(row._id);
+    if (window.confirm(`Are you sure you want to delete ${row.category}`)) {
+      deleteCategory(row._id)
+        .then(() => {
+          setCategories((currentCategories) =>
+            currentCategories.filter((category) => category._id !== row._id),
+          );
+          toast.success("Category deleted successfully");
+        })
+        .catch((error) => {
+          toast.error(error.message || "Failed to delete category");
+        });
+    }
   };
 
-  const onSubmit = async (formData) => {
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((currentData) => ({ ...currentData, [name]: value }));
+    setFormErrors((currentErrors) => ({ ...currentErrors, [name]: "" }));
+  };
+
+  const validateForm = () => {
+    const nextErrors = {};
+    const category = formData.category.trim();
+
+    if (!category) nextErrors.category = "Category name is required";
+    else if (category.length < 3) nextErrors.category = "Minimum 3 characters";
+    else if (category.length > 50) nextErrors.category = "Maximum 50 characters";
+    else if (!/^[a-zA-Z0-9\s&'-]+$/.test(category)) {
+      nextErrors.category = "Only alphanumeric characters allowed";
+    }
+
+    return nextErrors;
+  };
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    const nextErrors = validateForm();
+
+    if (Object.keys(nextErrors).length > 0) {
+      setFormErrors(nextErrors);
+      return;
+    }
+
     try {
       if (selectedCategory) {
-        updateCategoryMutation.mutate({
-          id: selectedCategory._id,
-          data: formData,
-        });
+        const response = await updateCategory(selectedCategory._id, formData);
+        const updatedCategory = response?.data?.category;
+
+        setCategories((currentCategories) =>
+          currentCategories.map((category) =>
+            category._id === selectedCategory._id ? updatedCategory : category,
+          ),
+        );
+        toast.success("Category updated successfully");
       } else {
-        addCategoryMutation.mutate(formData);
+        const response = await createCategory(formData);
+        const newCategory = response?.data?.category;
+
+        setCategories((currentCategories) => [...currentCategories, newCategory]);
+        toast.success("Category created successfully");
       }
       handleClose();
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
     } catch (error) {
       toast.error(error.message || "Something went wrong");
       console.error("Submission failed:", error);
@@ -155,8 +183,6 @@ export default function Categories() {
           p: { xs: 2.5, md: 3 },
           border: "1px solid #e5e7eb",
           borderRadius: 4,
-          background:
-            "linear-gradient(135deg, rgba(20, 184, 166, 0.08), rgba(255, 255, 255, 0.95))",
         }}
       >
         <Stack
@@ -166,22 +192,19 @@ export default function Categories() {
           justifyContent="space-between"
         >
           <Box>
-            <Typography variant="overline" color="text.secondary" fontWeight={800}>
-              Catalog
-            </Typography>
-            <Typography variant="h4" fontWeight={900} sx={{ mt: 0.5 }}>
-              Category Management
+            <Typography variant="h5" fontWeight={800}>
+              Categories
             </Typography>
             <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 620 }}>
-              Create and maintain product categories used across the grocery
-              catalog.
+              Create and manage product categories.
             </Typography>
           </Box>
           <Button
             variant="contained"
             onClick={() => {
               openModal();
-              reset({});
+              setFormData({ category: "" });
+              setFormErrors({});
             }}
             sx={{
               alignSelf: { xs: "stretch", sm: "center" },
@@ -199,27 +222,113 @@ export default function Categories() {
         </Stack>
       </Paper>
 
-      <CategoryTable
-        headers={categoryHeaders}
-        accessors={categoryAccessors}
-        data={data || []}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      <Paper
+        elevation={0}
+        sx={{
+          width: "100%",
+          overflow: "hidden",
+          border: "1px solid #e5e7eb",
+          borderRadius: 4,
+          boxShadow: "0 18px 45px rgba(15, 23, 42, 0.06)",
+        }}
+      >
+        <TableContainer sx={{ width: "100%", overflowX: "auto" }}>
+          <Table
+            sx={{
+              minWidth: { xs: 560, md: 640 },
+              "& th, & td": {
+                px: { xs: 1.5, sm: 2 },
+                py: { xs: 1.25, sm: 1.75 },
+                whiteSpace: "nowrap",
+              },
+            }}
+          >
+            <TableHead>
+              <TableRow sx={{ bgcolor: "#f8fafc" }}>
+                <TableCell sx={{ fontSize: 12, fontWeight: 800 }}>
+                  Category ID
+                </TableCell>
+                <TableCell sx={{ fontSize: 12, fontWeight: 800 }}>
+                  Category Name
+                </TableCell>
+                <TableCell sx={{ fontSize: 12, fontWeight: 800 }}>
+                  Actions
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {categories.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={3} sx={{ py: 6, textAlign: "center" }}>
+                    <Typography color="text.secondary">
+                      No categories found.
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {categories.map((category) => (
+                <TableRow key={category._id} hover>
+                  <TableCell>{category._id}</TableCell>
+                  <TableCell>{category.category}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      color="primary"
+                      size="small"
+                      onClick={() => handleEdit(category)}
+                      sx={{ bgcolor: "#eff6ff", mr: 0.75 }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      size="small"
+                      onClick={() => handleDelete(category)}
+                      sx={{ bgcolor: "#fef2f2" }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
 
       <CategoryModal
         open={open}
         onClose={handleClose}
         title={selectedCategory ? "Edit Category" : "Add Category"}
       >
-        <CategoryForm
-          fields={categoryFields}
-          register={register}
-          control={control}
-          errors={errors}
-          onSubmit={handleSubmit(onSubmit)}
-          submitLabel={selectedCategory ? "Update Category" : "Add Category"}
-        />
+        <Box
+          component="form"
+          onSubmit={onSubmit}
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        >
+          <TextField
+            label="Category Name"
+            name="category"
+            value={formData.category}
+            onChange={handleInputChange}
+            placeholder="e.g., Vegetables"
+            fullWidth
+            error={!!formErrors.category}
+            helperText={formErrors.category}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{
+              alignSelf: { xs: "stretch", sm: "flex-start" },
+              bgcolor: "#0f766e",
+              fontWeight: 800,
+              "&:hover": { bgcolor: "#115e59" },
+            }}
+          >
+            {selectedCategory ? "Update Category" : "Add Category"}
+          </Button>
+        </Box>
       </CategoryModal>
     </Stack>
   );

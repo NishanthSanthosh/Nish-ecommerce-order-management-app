@@ -11,101 +11,33 @@ import Orders from "./pages/orders";
 import Coupons from "./pages/coupons";
 import Settings from "./pages/settings";
 import { ToastContainer } from "react-toastify";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import ErrorBoundary from "./ErrorHandler/ErrorBoundary";
 import ProtectedRoute from "./components/protectedRoute";
 import PublicAuthRoute from "./components/publicAuthRoute";
 
 export default function App() {
-  const queryClient = new QueryClient();
   return (
     <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <ToastContainer position="top-right" autoClose={3000} />
-        <Routes>
-          <Route element={<PublicAuthRoute />}>
-            <Route element={<AuthLayout />}>
-              <Route
-                path="/signup"
-                element={
-                  <ErrorBoundary>
-                    <Login />
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/login"
-                element={
-                  <ErrorBoundary>
-                    <Login />
-                  </ErrorBoundary>
-                }
-              />
-            </Route>
+      <ToastContainer position="top-right" autoClose={3000} />
+      <Routes>
+        <Route element={<PublicAuthRoute />}>
+          <Route element={<AuthLayout />}>
+            <Route path="/signup" element={<Login />} />
+            <Route path="/login" element={<Login />} />
           </Route>
-          <Route element={<ProtectedRoute />}>
-            <Route element={<DashboardLayout />}>
-              <Route path="/" element={<Navigate to="/users" />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ErrorBoundary>
-                    <Dashboard />{" "}
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/products"
-                element={
-                  <ErrorBoundary>
-                    <Products />
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/categories"
-                element={
-                  <ErrorBoundary>
-                    <Categories />
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/orders"
-                element={
-                  <ErrorBoundary>
-                    <Orders />
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/users"
-                element={
-                  <ErrorBoundary>
-                    <Users />
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/coupons"
-                element={
-                  <ErrorBoundary>
-                    <Coupons />
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <ErrorBoundary>
-                    <Settings />
-                  </ErrorBoundary>
-                }
-              />
-            </Route>
+        </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/" element={<Navigate to="/users" />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/users" element={<Users />} />
+            <Route path="/coupons" element={<Coupons />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
-        </Routes>
-      </QueryClientProvider>
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 }
